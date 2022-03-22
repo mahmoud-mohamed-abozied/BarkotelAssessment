@@ -33,17 +33,39 @@ namespace BarkotelAssessment.Controllers
             {
                 return NotFound();
             }
-            /*string imageBase64Data = Convert.ToBase64String(_baseRepository.Cover);
-            string imageDataURL = string.Format("data:image/jpg;base64,{0}", imageBase64Data);
+            var returnedBook = new BookDto();
+            returnedBook.Title = book.Title;
+            returnedBook.Description = book.Description;
+            returnedBook.DateOfPublication = book.DateOfPublication.ToString();
 
-            return Ok(imageDataURL);*/
+            string imageBase64Data = Convert.ToBase64String(book.Cover);
+            string imageDataURL = string.Format("data:image/jpg;base64,{0}", imageBase64Data);
+            returnedBook.Cover = imageDataURL;
+
             return Ok(book);
         }
 
-        [HttpGet]
+        [HttpGet()]
         public IActionResult GetAll()
         {
-            return Ok(_baseRepository.GetAll());
+            var books = _baseRepository.GetAll();
+            var returnedBooks = new List<BookDto>();
+            foreach (var book in books)
+            {
+                string imageBase64Data = Convert.ToBase64String(book.Cover);
+                string imageDataURL = string.Format("data:image/jpg;base64,{0}", imageBase64Data);
+
+                returnedBooks.Add(new BookDto()
+                {
+                    Title = book.Title,
+                    Description = book.Description,
+                    DateOfPublication = book.DateOfPublication.ToString(),
+                    Cover = imageDataURL
+                });
+                
+
+            }
+            return Ok(returnedBooks);
         }
 
         /*[HttpGet(("search/{word}"))]
@@ -53,7 +75,7 @@ namespace BarkotelAssessment.Controllers
         }*/
         
         [HttpPost]
-        public IActionResult AddBook([FromForm] BookDto book)
+        public IActionResult AddBook([FromForm] BookForManipulation book)
         {
             if (book == null)
             {
@@ -117,7 +139,7 @@ namespace BarkotelAssessment.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateBook(int id, [FromForm] BookDto bookDto)
+        public IActionResult UpdateBook(int id, [FromForm] BookForManipulation bookDto)
         {
             if (bookDto == null)
                 return NotFound($"No author was found with ID {id}");
